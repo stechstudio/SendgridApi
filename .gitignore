@@ -1,0 +1,7 @@
+vendor/*
+vendor
+.DS_Store*
+ehthumbs.db
+Icon?
+example.list
+Thumbs.db

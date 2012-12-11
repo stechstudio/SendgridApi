@@ -3,9 +3,9 @@
 /**
  * SendGrid Subuser API PHP Client
  * This class requires Composer and Guzzle.
- * @author Alex Dills
+ * @author Alex Dills, STechStudio
  * @version 1.0
- * @since File available since 11/29/2012
+ * @since File available since 12/11/12
  */
 
 
