@@ -1,5 +1,23 @@
 {
-	"require": {
-		"guzzle/guzzle": "*"
-	}
+  "name": "stechstudio/SendgridApi",
+  "description": "Utility package",
+  "require": {
+	  "guzzle/guzzle": "*"
+  },
+  "require-dev": {
+	  "guzzle/guzzle": "*"
+  },
+  "autoload": {
+    "classmap": [
+    ],
+    "psr-4": {
+      "RC\\SendgridApi\\": "src"
+    }
+  },
+  "authors": [
+    {
+      "name": "Alex Dills",
+      "email": "alex@stechstudio.com"
+    }
+  ]
 }

@@ -2,17 +2,17 @@
 
 /**
  * SendGrid Subuser API PHP Client
- * This class requires Composer and Guzzle.
+ * This package requires Guzzle.
  * @author Alex Dills, STechStudio
  * @version 1.0
  * @since File available since 12/11/12
  */
 
-namespace AX;
+namespace RC\Sendgrid;
 
 use Guzzle\Http\Client;
 
-Class sendgridSubuserApi {
+Class SubuserApi {
 
 	/**
 	 * @var $baseUrl Url of the Sendgrid API, in this case, API v2
@@ -89,7 +89,7 @@ Class sendgridSubuserApi {
 	 */
 	function appDeactivate($subuser, $app){
 		return $this->_postRequest('customer.apps.json',array(
-			'task'		=> 'deativate',
+			'task'		=> 'deactivate',
 			'name'		=> $app,
 			'user'		=> $subuser
 			));
