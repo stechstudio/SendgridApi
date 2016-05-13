@@ -8,12 +8,12 @@
  * @since File available since 12/11/12
  */
 
+namespace AX;
 
-require 'vendor/autoload.php';
 use Guzzle\Http\Client;
 
 Class sendgridSubuserApi {
-	
+
 	/**
 	 * @var $baseUrl Url of the Sendgrid API, in this case, API v2
 	 * @var $user username for Sendgrid.com, set upon instantiation
@@ -53,7 +53,7 @@ Class sendgridSubuserApi {
 	}
 
 	/**
-	 * Gets the status of a certain app belonging to a subuser 
+	 * Gets the status of a certain app belonging to a subuser
 	 * @param $subuser The subuser whose app we're checking on
 	 * @param $app The name of the SendGrid app in question, whose settings we're listing
 	 * @return array of settings for a certain app
@@ -100,7 +100,7 @@ Class sendgridSubuserApi {
 	/**
 	 * Retrieves the existing Notifier Event URL for a specified subuser
 	 * @param $subuser the subuser who's notify event URL we're checking
-	 * @return string event URL of subuser 
+	 * @return string event URL of subuser
 	 */
 	function getEventUrl($subuser){
 		$tmp = $this->_postRequest('customer.eventposturl.json',array(
@@ -157,6 +157,28 @@ Class sendgridSubuserApi {
 			'unsubscribe'=>'1',
 			'spamreport'=> '1',
 			'url'		=> $url
+			));
+	}
+
+	/**
+	 * Upgrades the Event Notification app's webhook version to 3
+	 */
+	function upgradeEventNotifications($subuser,$url){
+		return $this->_postRequest('customer.apps.json',array(
+			'task'	=>	'setup',
+			'user'	=>	$subuser,
+			'name'	=>	'eventnotify',
+			'processed'	=> '1',
+			'dropped'	=> '1',
+			'deferred'	=> '1',
+			'delivered'	=> '1',
+			'bounce'	=> '1',
+			'click'		=> '1',
+			'open'		=> '1',
+			'unsubscribe'=>'1',
+			'spamreport'=> '1',
+			'version'	=>	'3',
+			'url'	=>	$url
 			));
 	}
 
@@ -232,19 +254,19 @@ Class sendgridSubuserApi {
 
 	/**
 	 * Adds a subuser to the Sendgrid account
-	 * @param string $subuser The username for the new subuser 
-	 * @param string $password The password for the new subuser 
-	 * @param string $email E-mail address for the new subuser 
-	 * @param string $first First name for the new subuser 
-	 * @param string $last Last name for the new subuser 
-	 * @param string $address Address for the new subuser 
-	 * @param string $city City for the new subuser 
-	 * @param string $zip ZIP code for the new subuser 
-	 * @param string $country Country for the new subuser 
-	 * @param string $phone Phone number for the new subuser 
-	 * @param string $website Website for the new subuser 
-	 * @param string $company Company name for the new subuser 
-	 * @param string $mail_domain Mail domain for the new subuser 
+	 * @param string $subuser The username for the new subuser
+	 * @param string $password The password for the new subuser
+	 * @param string $email E-mail address for the new subuser
+	 * @param string $first First name for the new subuser
+	 * @param string $last Last name for the new subuser
+	 * @param string $address Address for the new subuser
+	 * @param string $city City for the new subuser
+	 * @param string $zip ZIP code for the new subuser
+	 * @param string $country Country for the new subuser
+	 * @param string $phone Phone number for the new subuser
+	 * @param string $website Website for the new subuser
+	 * @param string $company Company name for the new subuser
+	 * @param string $mail_domain Mail domain for the new subuser
 	 * @return boolean
 	 */
 	function addSubUser($subuser,$password,$email,$first,$last,$address,$city,$state,$zip,$country,$phone,$website,$company,$mail_domain){
@@ -293,11 +315,11 @@ Class sendgridSubuserApi {
 	 * @param $subuser The subuser to enable access for
 	 * @return boolean
 	 */
-	function enableSiteAccess($subuser){ 
+	function enableSiteAccess($subuser){
 		return $this->_postRequest('customer.website_enable.json',array(
 			'user'		=> $subuser
-			));		
-	} 
+			));
+	}
 
 	/**
 	 * Disables access to the Sendgrid website for a subuser
@@ -307,7 +329,7 @@ Class sendgridSubuserApi {
 	function disableSiteAccess($subuser){
 		return $this->_postRequest('customers.website_disable.json',array(
 			'user'		=> $subuser
-			));		
+			));
 	}
 
 	/**
@@ -333,7 +355,7 @@ Class sendgridSubuserApi {
 			'password'	=> $password,
 			'confirm_password' => $password,
 			'email'		=> $email,
-			'first_name'=> $first, 
+			'first_name'=> $first,
 			'last_name'	=> $last,
 			'address'	=> $address,
 			'city'		=> $city,
@@ -345,7 +367,7 @@ Class sendgridSubuserApi {
 			'mail_domain'=> $mail_domain
 			));
 	}
- 
+
  	/**
  	 * Change subuser username
  	 * @param string $subuser The current username of the subuser
@@ -429,7 +451,7 @@ Class sendgridSubuserApi {
 	}
 
 	/**
-	 * Retreives statistics for a certain user 
+	 * Retreives statistics for a certain user
 	 * @param string $subuser the subuser we're getting statistics for
 	 * @param string $days The number of days in the past to include statistics
 	 * @param string $start_date The start date of the range to get statistics for
@@ -475,7 +497,7 @@ Class sendgridSubuserApi {
 	 * @param string $category the category we're checking statistics for
 	 * @param integer $days Number of days in the past to include statistics
 	 * @param string $start_date The start date to look up statistics for
-	 * @param string $end_date The end date to look up statistics for 
+	 * @param string $end_date The end date to look up statistics for
 	 * @return array List of statistics for the category specified
 	 */
 	function getStatsByCategory($subuser,$category,$days = NULL,$start_date = NULL,$end_date = NULL){
@@ -538,7 +560,7 @@ Class sendgridSubuserApi {
 		}
 	}
 
-	/** 
+	/**
 	 * Sets a subuser's total credits
 	 * @param string $subuser The subuser we're setting credits for
 	 * @param integer $credits the number of credits the user will be given
@@ -594,6 +616,21 @@ Class sendgridSubuserApi {
 		}
 	}
 
+	function getSubuserBounces($subuser){
+		return $this->_postRequest('https://sendgrid.com/api/user.bounces.json',array(
+			'task'	=>	'get',
+			'user'	=>	$subuser,
+			));
+	}
+
+	function removeBounce($subuser,$email){
+		return $this->_postRequest('https://sendgrid.com/api/user.bounces.json',array(
+			'task'	=>	'delete',
+			'user'	=>	$subuser,
+			'email'	=>	$email
+			));
+	}
+
 	/**
 	 * Gets the last error that occurred
 	 * @return the last error given by Sendgrid
@@ -609,16 +646,19 @@ Class sendgridSubuserApi {
 	 * @return Boolean or an array depending on whether the response was an error or not
 	 */
 	private function _postRequest($url, $data){
-	$request = $this->client->post($this->baseUrl . "/" . $url);
+	$fullurl = (stripos($url,"http") !== FALSE) ? $url : $this->baseUrl . "/" . $url;
+	echo $fullurl . "\n";
+	$request = $this->client->post($fullurl);
 	// Merge in our authentication
 	$postFields = array_merge(
-		$data, 
+		$data,
 		array(
 			'api_user'	=> $this->user,
 			'api_key'	=> $this->key)
 	);
+	print_r($postFields);
 	$request->addPostFields($postFields);
-	
+
 	$response = $request->send();
 	$response = $response->json();
 
@@ -634,8 +674,6 @@ Class sendgridSubuserApi {
 		    return $response;
 		}
 	}
-
-
 }
 
 ?>
