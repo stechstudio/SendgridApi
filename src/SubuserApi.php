@@ -25,9 +25,9 @@ Class SubuserApi {
 	private $key;
 	private $client;
 
-	function __construct($user, $key) {
-		$this->user = $user;
-		$this->key = $key;
+	function __construct() {
+		$this->user = getenv('SENDGRID_USERNAME');
+		$this->key = getenv('SENDGRID_KEY');
 		$this->client = new Client($this->baseUrl);
 	}
 	/**
