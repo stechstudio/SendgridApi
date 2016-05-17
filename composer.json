@@ -11,7 +11,7 @@
     "classmap": [
     ],
     "psr-4": {
-      "RC\\SendgridApi\\": "src"
+      "RC\\Sendgrid\\": "src"
     }
   },
   "authors": [
