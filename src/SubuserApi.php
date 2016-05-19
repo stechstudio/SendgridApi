@@ -41,6 +41,22 @@ Class SubuserApi {
 	}
 
 	/**
+	 * Checks whether a given subuser exists on the sendgrid account
+	 * @return boolean of whether the subuser exists
+	 */
+	function subuserExists($subuserUsername) {
+		$subusers = $this->getSubusers();
+
+		foreach($subusers as $key => $info) {
+			if($info['username'] == $subuserUsername) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Gets a list of the apps and their respective statuses for a certain subuser
 	 * @param $subuser The subuser whose apps we're retreiving
 	 * @return array list of apps for a subuser
@@ -416,7 +432,7 @@ Class SubuserApi {
 	 * @param strign $date(Optional) the date to retreive invalid emails for
 	 * @return array List of invalid e-mails
 	 */
-	function retrieveInvalidEmails($subuser,$date = null){
+	function getInvalidEmails($subuser,$date = null){
 		return $this->_postRequest('customer.invalidemails.json',array(
 			'task'		=> 'get',
 			'user'		=> $subuser,
@@ -430,7 +446,7 @@ Class SubuserApi {
 	 * @param string $email The email to be removed
 	 * @return boolean
 	 */
-	function removeInvalidEmails($subuser,$email = null){
+	function removeInvalidEmail($subuser,$email = null){
 		return $this->_postRequest('customer.invalidemails.json',array(
 			'task'		=> 'delete',
 			'user'		=> $subuser,
@@ -616,19 +632,116 @@ Class SubuserApi {
 		}
 	}
 
+	/**
+	 * Retrieve a list of the bounces for a subuser
+	 * @param string $subuser Subuser whose bounces we're retrieving
+	 * @return array of bounced e-mail addresses
+	 */
 	function getSubuserBounces($subuser){
-		return $this->_postRequest('https://sendgrid.com/api/user.bounces.json',array(
+		return $this->_postRequest('https://api.sendgrid.com/api/user.bounces.json',array(
 			'task'	=>	'get',
 			'user'	=>	$subuser,
 			));
 	}
 
+	/**
+	 * Remove a single bounced e-mail from a subuser
+	 * @param string $subuser Subuser whose bounce we're removing
+	 * @param email $email address to remove from the bounces list
+	 * @return boolean
+	 */
 	function removeBounce($subuser,$email){
+		return $this->_postRequest('https://api.sendgrid.com/api/user.bounces.json',array(
+			'task'	=>	'delete',
+			'user'	=>	$subuser,
+			'email'	=>	$email
+			));
+	}
+
+	/**
+	 * Retrieve a list of the spam reports for a subuser
+	 * @param string $subuser Subuser whose spam reports we're retrieving
+	 * @return array of spam reports
+	 */
+	function getSubuserSpamReports($subuser) {
+		return $this->_postRequest('https://api.sendgrid.com/api/user.spamreports.json', array(
+			'task'	=>	'get',
+			'user'	=>	$subuser
+		));
+	}
+
+	/**
+	 * Remove a spam report from a subuser account
+	 * @param string $subuser Subuser whose account we're removing the spam report from
+	 * @param string $email Email address to remove the spam report for
+	 * @return boolean
+	 */
+	function removeSpamReport($subuser,$email){
 		return $this->_postRequest('https://sendgrid.com/api/user.bounces.json',array(
 			'task'	=>	'delete',
 			'user'	=>	$subuser,
 			'email'	=>	$email
 			));
+	}
+
+	/**
+	 * Find suppressed e-mails across all suppression types and return which ones they are
+	 * @param string $subuser Subuser we're checking for these suppressions on
+	 * @param array $emails array of emails to check for
+	 * @return array that looks like this:
+	 * 	[
+	 *	 	'Bounces' => [
+	 *	 		'bouncedemail1' => '[reason]',
+	 *			'bouncedemail2' => '[reason]',
+	 *			'bouncedemail3' => '[reason]'
+	 *		],
+	 *		'Spam Reports' => [
+	 *			'spamreportedemail1' => '[reason]',
+	 *			'spamreportedemail2' => '[reason]'
+	 *		],
+	 *		'Invalid Emails' => [
+	 *			'invalidaddress1' => '[reason]',
+	 *			'invalidaddress2' => '[reason]'
+	 *		],
+	 *		'Not Suppressed' => [
+	 *			'email1',
+	 *			'email2'
+ 	 *		]
+	 * 	]
+	 */
+
+	function getSuppressions($subuser, $emails) {
+		$results = ['Bounces' => [], 'Spam Reports' => [], 'Invalid Emails' => [], 'Not Suppressed' => []];
+
+		if(is_string($emails)) {
+			$emails = [$emails];
+		}
+
+		if(!is_array($emails)) {
+			throw new \Exception("emails paremeter must be a list");
+		}
+
+		$notSuppressed = array_flip($emails);
+
+		$subuserSuppressions = [
+			'Spam Reports' => $this->getSubuserSpamReports($subuser),
+			'Bounces' => $this->getSubuserBounces($subuser),
+			'Invalid Emails' => $this->getInvalidEmails($subuser)
+		];
+
+		foreach($subuserSuppressions as $type => $suppressions) {
+			if(!count($suppressions) > 0) continue;
+			foreach($suppressions as $suppressedInfo) {
+				if(in_array($suppressedInfo['email'], $emails)) {
+					$results[$type][$suppressedInfo['email']] = $suppressedInfo['reason'];
+					unset($notSuppressed[$suppressedInfo['email']]);
+				}
+			}
+		}
+
+		$results['Not Suppressed'] = array_flip($notSuppressed);
+
+		return $results;
 	}
 
 	/**
@@ -647,7 +760,7 @@ Class SubuserApi {
 	 */
 	private function _postRequest($url, $data){
 	$fullurl = (stripos($url,"http") !== FALSE) ? $url : $this->baseUrl . "/" . $url;
-	echo $fullurl . "\n";
+
 	$request = $this->client->post($fullurl);
 	// Merge in our authentication
 	$postFields = array_merge(
@@ -656,7 +769,7 @@ Class SubuserApi {
 			'api_user'	=> $this->user,
 			'api_key'	=> $this->key)
 	);
-	print_r($postFields);
+
 	$request->addPostFields($postFields);
 
 	$response = $request->send();
