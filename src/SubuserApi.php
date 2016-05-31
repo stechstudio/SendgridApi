@@ -744,6 +744,53 @@ Class SubuserApi {
 		return $results;
 	}
 
+
+	function clearSuppressions($subuser, $emails) {
+		$results = ['Bounces' => [], 'Spam Reports' => [], 'Invalid Emails' => [], 'Not Suppressed' => []];
+
+		if(is_string($emails)) {
+			$emails = [$emails];
+		}
+
+		if(!is_array($emails)) {
+			throw new \Exception("emails paremeter must be a list");
+		}
+
+		$notSuppressed = array_flip($emails);
+
+		$subuserSuppressions = [
+			'Spam Reports' => $this->getSubuserSpamReports($subuser),
+			'Bounces' => $this->getSubuserBounces($subuser),
+			'Invalid Emails' => $this->getInvalidEmails($subuser)
+		];
+
+		foreach($subuserSuppressions as $type => $suppressions) {
+			if(!count($suppressions) > 0) continue;
+			foreach($suppressions as $suppressedInfo) {
+				if(in_array($suppressedInfo['email'], $emails)) {
+					switch($type){
+						case 'Spam Reports':
+							$result = $this->removeSpamReport($subuser, $suppressedInfo['email']);
+							break;
+						case 'Bounces':
+							$result = $this->removeBounce($subuser, $suppressedInfo['email']);
+							break;
+						case 'Invalid Emails':
+							$result = $this->removeInvalidEmail($subuser, $suppressedInfo['email']);
+							break;
+					}
+
+					unset($notSuppressed[$suppressedInfo['email']]);
+					$results[$type][$suppressedInfo['email']] = ($result) ? "Suppression Cleared" : "Suppression failed: " . $this->getLastError();
+				}
+			}
+		}
+
+		$results['Not Suppressed'] = array_flip($notSuppressed);
+
+		return $results;
+	}
+
 	/**
 	 * Gets the last error that occurred
 	 * @return the last error given by Sendgrid
