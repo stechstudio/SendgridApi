@@ -450,7 +450,7 @@ Class SubuserApi {
 		return $this->_postRequest('customer.invalidemails.json',array(
 			'task'		=> 'delete',
 			'user'		=> $subuser,
-			'date'		=> $email
+			'email'		=> $email
 			));
 	}
 
