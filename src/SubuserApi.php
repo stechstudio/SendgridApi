@@ -733,7 +733,13 @@ Class SubuserApi {
 			if(!count($suppressions) > 0) continue;
 			foreach($suppressions as $suppressedInfo) {
 				if(in_array($suppressedInfo['email'], $emails)) {
-					$results[$type][$suppressedInfo['email']] = $suppressedInfo['reason'];
+					if($type == 'Spam Reports') {
+						$reason = "Spam report";
+					} else {
+						$reason = $suppressedInfo['reason'];
+					}
+
+					$results[$type][$suppressedInfo['email']] = $reason;
 					unset($notSuppressed[$suppressedInfo['email']]);
 				}
 			}
